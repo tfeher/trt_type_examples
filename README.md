@@ -1,5 +1,8 @@
 # TensorRT examples to test type conversions
 
+These examples are based on the TensorRT samples published at
+ https://github.com/NVIDIA/TensorRT.
+
 ## How to compile
 
 It is recommended to compile the examples in NVIDIA TensorRT docker container.
@@ -12,23 +15,23 @@ docker run  --rm -it -v $PWD:/data -w /data nvcr.io/nvidia/tensorrt:20.03-py3
 ## 1. Explicit type conversions
 Let input be a float tensor. main1a.cpp defines the following network:
 
-x = shape(input)
-y = x + x
+- x = shape(input)
+- y = x + x
 
-The shape op changes the input type to INT32, the elementwise addition keeps th
-same time
+The shape op changes the input type to INT32, the elementwise addition keeps the
+same shape.
 
 ```
 nvcc main1a.cpp logger.cpp -lnvinfer
 ```
 
-## 2. Implicit type conversion from INT32 does not work
+## 2. No implicit type conversion from INT32
 Let input be a float tensor. main1b.cpp defines the following network:
 
-x = shape(input)
-y = - x
+- x = shape(input)
+- y = - x
 
-The shape op changes the input type to INT32, but elementwise - operation does not support INT32 type. The engine constructino fails:
+The shape op changes the input type to INT32, but elementwise - operation does not support INT32 type. The engine construction fails:
 
 ```
 nvcc main1b.cpp logger.cpp -lnvinfer
@@ -45,11 +48,11 @@ nvcc main1b.cpp logger.cpp -lnvinfer
 ## 3. Implicit type conversion from INT8 works
 Let input be an INT8 tensor. main1c.cpp defines the following network:
 
-x = RELU(input)
-y = - x
+- x = RELU(input)
+- y = - x
 
 While the RELU op supports INT8, the elementwise op does not. The network is
-still build and executed successfully due to automatic type conversion.
+still built and executed successfully due to automatic type conversion.
 Note that the output type is FP32.
 
 ```
