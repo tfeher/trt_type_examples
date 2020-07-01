@@ -119,7 +119,7 @@ bool TrtExample::constructNetwork(
     SampleUniquePtr<nvinfer1::IBuilder> &builder,
     SampleUniquePtr<nvinfer1::INetworkDefinition> &network,
     SampleUniquePtr<nvinfer1::IBuilderConfig> &config) {
-  nvinfer1::Dims dims{4, {1, 2, 3, 4}};
+  nvinfer1::Dims dims{4, {1, 2, 3, 1}};
 
   nvinfer1::ITensor *input =
       network->addInput("input", nvinfer1::DataType::kINT8, dims);
