@@ -25,7 +25,7 @@
 #include <string>
 #include <vector>
 
-const std::string gSampleName = "Type1a";
+const std::string gSampleName = "Type1c";
 
 /**
  * This example is derived from the TensorRT samples published at
@@ -104,6 +104,8 @@ bool TrtExample::build() {
   config->setFlag(nvinfer1::BuilderFlag::kFP16);
   config->setFlag(nvinfer1::BuilderFlag::kINT8);
 
+  config->setFlag(BuilderFlag::kSTRICT_TYPES);
+
   auto constructed = constructNetwork(builder, network, config);
   if (!constructed) {
     return false;
@@ -129,13 +131,14 @@ bool TrtExample::constructNetwork(
       network->addActivation(*input, nvinfer1::ActivationType::kRELU);
   assert(A);
   A->setName("A");
+  A->setOutputType(0, nvinfer1::DataType::kINT8);
   nvinfer1::ITensor *x = A->getOutput(0);
   x->setDynamicRange(-128.0f, 127.0f);
   auto *B = network->addUnary(*x, nvinfer1::UnaryOperation::kNEG);
-
+  // auto *B = network->addElementWise(*x, *x, ElementWiseOperation::kSUM);
   assert(B);
   B->setName("B");
-  B->setOutputType(0, nvinfer1::DataType::kHALF);
+  B->setOutputType(0, nvinfer1::DataType::kINT8);
   nvinfer1::ITensor *y = B->getOutput(0);
   y->setDynamicRange(-128.0f, 127.0f);
 
