@@ -121,7 +121,7 @@ bool TrtExample::constructNetwork(
     SampleUniquePtr<nvinfer1::IBuilder> &builder,
     SampleUniquePtr<nvinfer1::INetworkDefinition> &network,
     SampleUniquePtr<nvinfer1::IBuilderConfig> &config) {
-  nvinfer1::Dims dims{4, {1, 64, 64, 64}};
+  nvinfer1::Dims dims{4, {1, 1, 1, 4}};
 
   nvinfer1::ITensor *input =
       network->addInput("input", nvinfer1::DataType::kINT8, dims);
@@ -136,17 +136,17 @@ bool TrtExample::constructNetwork(
   nvinfer1::ITensor *x = A->getOutput(0);
   x->setDynamicRange(-128.0f, 127.0f);
   x->setType(nvinfer1::DataType::kINT8);
-  // auto *B = network->addIdentity(*x);
-  // // auto *B = network->addActivation(*x, nvinfer1::ActivationType::kRELU);
-  // // auto *B = A;
-  // assert(B);
-  // B->setName("B");
-  // B->setOutputType(0, nvinfer1::DataType::kINT8);
-  // nvinfer1::ITensor *y = x; //B->getOutput(0);
-  // y->setDynamicRange(-128.0f, 127.0f);
-  network->markOutput(*x);
+  auto *B = network->addIdentity(*x);
+  assert(B);
+  B->setName("B");
+  B->setOutputType(0, nvinfer1::DataType::kINT8);
+  nvinfer1::ITensor *y = B->getOutput(0);
+  y->setDynamicRange(-128.0f, 127.0f);
+  y->setType(nvinfer1::DataType::kINT8);
+  y->setName("output");
+  network->markOutput(*y);
 
-  switch (x->getType()) {
+  switch (y->getType()) {
   case nvinfer1::DataType::kINT8:
     gLogInfo << "Otput type is INT8" << std::endl;
     break;
@@ -205,7 +205,7 @@ bool TrtExample::infer() {
   if (n_inputs > 0) {
     auto input_dims = context->getBindingDimensions(0);
 
-    std::vector<float> values{-2, -1, 0, 1, 2, 3};
+    std::vector<int> values{-1, 0, 1, 2};
 
     // Read the input data into the managed buffers
     uint8_t *hostShapeBuffer =
@@ -227,10 +227,10 @@ bool TrtExample::infer() {
   buffers.copyOutputToHost();
 
   // Verify results
-  std::vector<float> expected_output{0, 0, 0, -1, -2, -3};
+  std::vector<int> expected_output{0, 0, 1, 2};
 
-  float *res = static_cast<float *>(buffers.getHostBuffer("output"));
-  // int *res = static_cast<int *>(buffers.getHostBuffer("output"));
+  // float *res = static_cast<float *>(buffers.getHostBuffer("output"));
+  uint8_t *res = static_cast<uint8_t *>(buffers.getHostBuffer("output"));
   std::cout << "\nOutput:\n" << std::endl;
   bool correct = true;
   for (int i = 0; i < expected_output.size(); i++) {
@@ -257,8 +257,8 @@ int main(int argc, char **argv) {
   if (!sample.build()) {
     return gLogger.reportFail(sampleTest);
   }
-  // if (!sample.infer()) {
-  //   return gLogger.reportFail(sampleTest);
-  // }
+  if (!sample.infer()) {
+    return gLogger.reportFail(sampleTest);
+  }
   return gLogger.reportPass(sampleTest);
 }
