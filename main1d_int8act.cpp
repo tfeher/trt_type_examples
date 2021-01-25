@@ -148,19 +148,19 @@ bool TrtExample::constructNetwork(
 
   switch (y->getType()) {
   case nvinfer1::DataType::kINT8:
-    gLogInfo << "Otput type is INT8" << std::endl;
+    gLogInfo << "Output type is INT8" << std::endl;
     break;
   case nvinfer1::DataType::kINT32:
-    gLogInfo << "Otput type is INT32" << std::endl;
+    gLogInfo << "Output type is INT32" << std::endl;
     break;
   case nvinfer1::DataType::kFLOAT:
-    gLogInfo << "Otput type is FP32" << std::endl;
+    gLogInfo << "Output type is FP32" << std::endl;
     break;
   case nvinfer1::DataType::kHALF:
-    gLogInfo << "Otput type is FP16" << std::endl;
+    gLogInfo << "Output type is FP16" << std::endl;
     break;
   default:
-    gLogInfo << "Otput type is unknown" << std::endl;
+    gLogInfo << "Output type is unknown" << std::endl;
   }
 
   // Set allowed formats for this tensor. By default all formats are allowed.
@@ -229,7 +229,6 @@ bool TrtExample::infer() {
   // Verify results
   std::vector<int> expected_output{0, 0, 1, 2};
 
-  // float *res = static_cast<float *>(buffers.getHostBuffer("output"));
   uint8_t *res = static_cast<uint8_t *>(buffers.getHostBuffer("output"));
   std::cout << "\nOutput:\n" << std::endl;
   bool correct = true;
@@ -238,8 +237,6 @@ bool TrtExample::infer() {
       std::cout << i << ": error incorrect value " << res[i] << " vs "
                 << expected_output[i] << "\n";
       correct = false;
-    } else {
-      std::cout << i << ": " << res[i] << "\n";
     }
   }
   return correct;
